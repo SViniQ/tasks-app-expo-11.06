@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, Platform, StatusBar as RNStatusBar, Image, Pressable, ActivityIndicator, Modal, Button } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Platform, StatusBar as RNStatusBar, Image, ActivityIndicator, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import Checkbox from 'expo-checkbox';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { GluestackUIProvider, Input, InputField, Button, ButtonText } from '@gluestack-ui/themed';
+import { config } from '@gluestack-ui/config';
 import TaskList from './src/components/TaskList';
 import { addTask, deleteTask, getAllTasks, updateTask, TaskItem } from './src/utils/handle-api';
 import { globalStyles } from './src/styles/global';
@@ -68,6 +70,7 @@ export default function App() {
   };
 
   return (
+    <GluestackUIProvider config={config}>
     <SafeAreaView className="flex-1 bg-gray-100" style={{ paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight : 0 }}>
       <View className="flex-1 max-w-xl w-full self-center px-4">
         <View style={styles.headerContainer}>
@@ -109,32 +112,26 @@ export default function App() {
         </View>
 
         <View style={styles.actionButtonsContainer}>
-          <Pressable 
-            style={({ pressed }) => [
-              styles.actionButton,
-              styles.actionButtonAdd,
-              pressed && styles.actionButtonAddPressed
-            ]}
+          <Button
             onPress={() => setModalVisible(true)}
+            style={[styles.actionButton, styles.actionButtonAdd]}
           >
-            <Text style={styles.actionButtonText}>Nova Tarefa</Text>
-          </Pressable>
+            <ButtonText style={styles.actionButtonText}>Nova Tarefa</ButtonText>
+          </Button>
 
-          <Pressable 
-            style={({ pressed }) => [
-              styles.actionButton,
-              styles.deleteButton,
-              pressed && styles.deleteButtonPressed
-            ]}
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
             // TODO (Zustand): Chame a action de deletar todas as tarefas da sua store
-            onPress={() => setTasks([])} 
+            onPress={() => setTasks([])}
           >
             <Text style={styles.actionButtonText}>Excluir todas</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.aboutButtonContainer}>
-          <Button title="Sobre o App" onPress={() => setAboutModalVisible(true)} />
+          <TouchableOpacity onPress={() => setAboutModalVisible(true)} style={styles.aboutButton}>
+            <Text style={styles.aboutButtonText}>Sobre o App</Text>
+          </TouchableOpacity>
         </View>
 
         {/* TODO (Zustand): Remova as props tasks, onUpdate e onDelete após refatorar o TaskList */}
@@ -165,13 +162,14 @@ export default function App() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{isUpdating ? "Editar Tarefa" : "Nova Tarefa"}</Text>
             
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nome da tarefa..."
-              value={text}
-              maxLength={50}
-              onChangeText={setText}
-            />
+            <Input style={styles.modalInput}>
+              <InputField
+                placeholder="Nome da tarefa..."
+                value={text}
+                maxLength={50}
+                onChangeText={setText}
+              />
+            </Input>
 
             <View style={styles.fieldRow}>
               <Text style={styles.fieldLabel}>Data limite:</Text>
@@ -244,13 +242,13 @@ export default function App() {
               <TouchableOpacity style={styles.modalCancelBtn} onPress={resetForm}>
                 <Text style={styles.modalCancelText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalSaveBtn, !text.trim() && styles.modalSaveBtnDisabled]} 
+              <Button
+                style={[styles.modalSaveBtn, !text.trim() && styles.modalSaveBtnDisabled]}
                 onPress={handleSave}
-                disabled={!text.trim()}
+                isDisabled={!text.trim()}
               >
-                <Text style={styles.modalSaveText}>Salvar</Text>
-              </TouchableOpacity>
+                <ButtonText style={styles.modalSaveText}>Salvar</ButtonText>
+              </Button>
             </View>
           </View>
         </View>
@@ -266,6 +264,7 @@ export default function App() {
 
       <StatusBar style="auto" />
     </SafeAreaView>
+    </GluestackUIProvider>
   );
 }
 
@@ -332,6 +331,14 @@ const styles = StyleSheet.create({
   aboutButtonContainer: {
     marginTop: 16,
     alignItems: 'center',
+  },
+  aboutButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  aboutButtonText: {
+    color: '#000',
+    fontSize: 14,
   },
   actionButton: {
     paddingVertical: 14,
