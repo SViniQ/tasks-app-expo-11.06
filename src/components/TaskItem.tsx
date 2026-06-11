@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  Button,
+  ButtonText,
+  Heading,
+  Text as GlueText,
+} from '@gluestack-ui/themed';
 import { TaskItem as TaskType } from '../utils/handle-api';
 
 // TODO (Zustand): Mantenha apenas a prop 'task'. Remova 'updateMode' e 'deleteTask'
@@ -12,29 +24,61 @@ interface TaskItemProps {
 
 // TODO (Zustand): Importe o useTaskStore e pegue as actions de atualizar e deletar diretamente da store
 const TaskItem: React.FC<TaskItemProps> = ({ task, updateMode, deleteTask }) => {
+  const [showAlert, setShowAlert] = useState(false);
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
 
+  const handleConfirmDelete = () => {
+    setShowAlert(false);
+    deleteTask();
+  };
+
   return (
-    <View style={styles.task}>
-      <View style={styles.contentContainer}>
-        <Text style={[styles.text, !!task.completed && styles.textCompleted]}>
-          {task.text}
-        </Text>
-        {task.dueDate && (
-          <Text style={[styles.dateText, isOverdue ? styles.dateOverdue : styles.dateOnTime]}>
-            Até: {new Date(task.dueDate).toLocaleDateString()}
+    <>
+      <View style={styles.task}>
+        <View style={styles.contentContainer}>
+          <Text style={[styles.text, !!task.completed && styles.textCompleted]}>
+            {task.text}
           </Text>
-        )}
+          {task.dueDate && (
+            <Text style={[styles.dateText, isOverdue ? styles.dateOverdue : styles.dateOnTime]}>
+              Até: {new Date(task.dueDate).toLocaleDateString()}
+            </Text>
+          )}
+        </View>
+        <View style={styles.icons}>
+          <TouchableOpacity onPress={updateMode} accessibilityRole="button">
+            <Feather name="edit" size={20} color="#fff" style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowAlert(true)} accessibilityRole="button">
+            <AntDesign name="delete" size={20} color="#fff" style={styles.icon} />
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.icons}>
-        <TouchableOpacity onPress={updateMode} accessibilityRole="button">
-          <Feather name="edit" size={20} color="#fff" style={styles.icon} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={deleteTask} accessibilityRole="button">
-          <AntDesign name="delete" size={20} color="#fff" style={styles.icon} />
-        </TouchableOpacity>
-      </View>
-    </View>
+
+      <AlertDialog isOpen={showAlert} onClose={() => setShowAlert(false)}>
+        <AlertDialogBackdrop />
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <Heading size="lg">Excluir Tarefa</Heading>
+          </AlertDialogHeader>
+          <AlertDialogBody>
+            <GlueText>Tem certeza que deseja excluir esta tarefa?</GlueText>
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              onPress={() => setShowAlert(false)}
+              style={{ marginRight: 8 }}
+            >
+              <ButtonText>Cancelar</ButtonText>
+            </Button>
+            <Button action="negative" onPress={handleConfirmDelete}>
+              <ButtonText>Excluir</ButtonText>
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
